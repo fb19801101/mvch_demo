@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd"
+       default-autowire="byName">   <!--default-lazy-init="true"    配置懒加载-->
+    <!--自动扫描（实体类）注解包：实体类位置为：com.spring.mvc.entities.User,不能写成：com.spring.mvc.entities,而要写成：com.spring.mvc,packagesToScan要比实际上前一层-->
+    <!--采用注解的方式注入action，service，dao  -->
+    <context:component-scan base-package="com.mvc"/>
+    <context:component-scan base-package="com.mvc.controller"/>
+    <context:component-scan base-package="com.mvc.service"/>
+    <context:component-scan base-package="com.mvc.dao"/>
+    <!-- 开启SpringMVC注解模式 -->
+    <!--<mvc:annotation-driven/>-->
+    <!-- location值为参数配置文件的位置 -->
+    <!-- <context:property-placeholder location="classpath:properties/db-config.properties"/>-->
+    <!-- 属性配置文件 -->
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:properties/db-config.properties"/>
+    </bean>
+
+    <!-- 数据库配置 -->
+    <!-- 数据库连接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxPoolSize" value="${maxPoolSize}"/>
+        <property name="minPoolSize" value="${minPoolSize}"/>
+        <property name="autoCommitOnClose" value="${autoCommitOnClose}"/>
+        <property name="checkoutTimeout" value="${checkoutTimeout}"/>
+        <property name="acquireRetryAttempts" value="${acquireIncrement}"/>
+    </bean>
+
+    <!--  sessionFactory配置   -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+                <prop key="hibernate.autoReconnect">true</prop>
+                <prop key="hibernate.connection.autocommit">true</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <!-- 解决session关闭问题 -->
+                <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
+                <!-- spring 和 hibernate 整合的时候默认就是使用线程的，下面这一行不用写，写了反而要报错，
+                此外 sessionFaction，不能使用openSession，既不能保存数据到数据库，还不能实现事务功能 -->
+                <prop key="current_session_context_class">thread</prop>
+                <prop key="hibernate.connection.url">jdbc:mysql://localhost:3306/db_webapp</prop>
+                <prop key="hibernate.connection.driver_class">com.mysql.jdbc.Driver</prop>
+                <!--                <prop key="hibernate.max_fetch_depth">3</prop>-->
+<!--                <prop key="hibernate.connection.driver_class">${jdbc.driver}</prop>-->
+<!--                <prop key="hibernate.connection.url">${jdbc.url}</prop>-->
+<!--                <prop key="hibernate.connection.username">${jdbc.username}</prop>-->
+<!--                <prop key="hibernate.connection.password">${jdbc.password}</prop>-->
+            </props>
+        </property>
+        <!-- 包扫描的方式加载注解类 -->
+        <property name="packagesToScan">
+            <list>
+                <value>com.mvc.entity</value>
+            </list>
+        </property>
+<!--        <property name="configLocation">-->
+<!--            &lt;!&ndash;mapper实例映射关系文件配置在cfg文件里&ndash;&gt;-->
+<!--            <value>classpath:struts/hibernate.cfg.xml</value>-->
+<!--        </property>-->
+        <property name="mappingLocations">
+            <list>
+                <value>classpath:hibernate/User.hbm.xml</value>
+                <value>classpath:hibernate/Student.hbm.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 用注解来实现事物管理 -->
+    <bean id="txManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!--xml方式实现事物管理-->
+<!--    <tx:annotation-driven transaction-manager="txManager"/>-->
+<!--    <tx:advice id="txAdvice" transaction-manager="txManager">-->
+<!--        <tx:attributes>-->
+<!--            &lt;!&ndash;默认：-->
+<!--                isolation:DEFAULT-->
+<!--                propagation:REQUIRED-->
+<!--                timeout:-1 事物超时时间由底层事物系统决定-->
+<!--                read-only:false-->
+<!--                rollback-for:所有允许异常回滚-->
+<!--                no-rollback-for:所有检查异常不回滚 &ndash;&gt;-->
+<!--            <tx:method name="get*" read-only="true"/>-->
+<!--            <tx:method name="do*"/>-->
+<!--        </tx:attributes>-->
+<!--    </tx:advice>-->
+<!--    <aop:config proxy-target-class="true">-->
+<!--        <aop:pointcut expression="execution(* com.ssh.service..*(..))" id="serviceMethod"/>-->
+<!--        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod"/>-->
+<!--    </aop:config>-->
+</beans>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- 数据库连接配置 -->
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/db_webapp?characterEncoding=utf-8</property>
+        <property name="connection.username">root</property>
+        <property name="connection.password">Dx19800602Fb</property>
+        <!-- 每个数据库都有1个，针对特定的关系型数据库生成优化的SQL -->
+        <property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
+        <!-- 如果使用的是getCurrentSession()的话，需要配置，否则是空指针,使用openSession()不需要配置-->
+        <!-- 如果使用的是本地事务（jdbc事务 >thread<） 如果使用的是全局事务（jta事务 >jta<） -->
+        <property name="current_session_context_class">thread</property>
+        <!-- 设置默认的数据库连接池 -->
+        <property name="connection.pool_size">5</property>
+        <!-- 显示SQL -->
+        <property name="show_sql">true</property>
+        <!-- 格式化SQL -->
+        <property name="format_sql">true</property>
+        <!-- 根据schema更新数据表的工具 -->
+        <property name="hbm2ddl.auto">update</property>
+        <!-- 开启二级缓存 -->
+        <property name="cache.use_second_level_cache">true</property>
+        <!-- 开启查询二级缓存 -->
+        <property name="cache.use_query_cache">true</property>
+        <!-- Hibernate4.0以上设置factory 缓存工具 -->
+        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+        <!-- 二级缓存 ehcache的配置文件位置 -->
+        <property name="hibernate.cache.provider_configuration_file_resource_path">struts/ehcache.xml</property>
+        <!-- 数据表映射配置文件 -->
+        <mapping resource="hibernate/User.hbm.xml"/>
+        <mapping resource="hibernate/Student.hbm.xml"/>
+        <!-- 需要缓存的类  read-only 无需修改，那么就可以对其进行只读 缓存;read-write需要更新数据，那么使用读/写缓存 比较合适，
+        前提：数据库不可以为serializable transaction isolation level（序列化事务隔离级别）；nonstrice-read-write 只偶尔需要更新数据-->
+        <!-- 需要缓存的类 -->
+        <class-cache usage="read-only" class="com.mvc.entity.User"/>
+        <class-cache usage="read-only" class="com.mvc.entity.Student"/>
+    </session-factory>
+</hibernate-configuration>
+
